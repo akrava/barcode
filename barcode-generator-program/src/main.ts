@@ -4,18 +4,32 @@ import * as path from "path";
 function createWindow() {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        height: 600,
+        height: 800,
+        width: 1200,
+        minHeight: 600,
+        minWidth: 800,
+        autoHideMenuBar: true, // set to true
         webPreferences: {
-            preload: path.join(__dirname, "preload.js"),
+            nodeIntegration: true,
+            webSecurity: false,
         },
-        width: 800,
     });
 
+    mainWindow.menuBarVisible = false;
+
+
+    if (process.env.NODE_ENV === "development") {
+        mainWindow.loadURL(`http://localhost:4000`);
+        mainWindow.webContents.openDevTools();
+    } else {
+        mainWindow.loadFile(path.join(__dirname, "../index.html"))
+    }
+
     // and load the index.html of the app.
-    mainWindow.loadFile(path.join(__dirname, "../index.html"));
+    // mainWindow.loadFile(path.join(__dirname, "../index.html"));
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished

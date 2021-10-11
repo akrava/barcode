@@ -1,0 +1,50 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+.all-block {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+.header-block {
+    display: flex;
+    flex: 0 1 100px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(17, 29, 56);
+    height: 100px;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-block h1 {
+    margin-top: 0;
+    margin-bottom: 0;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.main-block {
+    display: flex;
+    flex: 1 1 auto;
+    color: rgb(7, 7, 83);
+}
+
+.footer-block {
+    display: flex;
+    flex: 0 1 30px;
+    color: rgb(199 199 199);
+    background-color: rgb(17 29 56);
+    height: 30px;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.main-wrapper {
+    font-family: 'Open Sans', sans-serif;
+    width: 100%;
+}
