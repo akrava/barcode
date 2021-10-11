@@ -1,0 +1,60 @@
+{
+  "name": "barcode-generator",
+  "version": "1.0.0",
+  "description": "Barcode generator",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akrava/barcode.git"
+  },
+  "author": "Arkadii Kravchuk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/akrava/barcode/issues"
+  },
+  "homepage": "https://github.com/akrava/barcode#readme",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.61",
+    "@electron-forge/maker-deb": "^6.0.0-beta.61",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.61",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
+    "@electron-forge/maker-zip": "^6.0.0-beta.61",
+    "electron": "^15.1.2"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "barcode_generator"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  }
+}
