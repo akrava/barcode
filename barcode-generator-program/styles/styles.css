@@ -76,3 +76,15 @@ html, body {
 textarea:focus, input:focus{
     outline: none;
 }
+
+.source-barcode {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.source-barcode-actions {
+    text-align: center;
+    margin-top: 4px;
+    font-size: 15px;
+}
