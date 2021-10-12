@@ -48,3 +48,31 @@ html, body {
     font-family: 'Open Sans', sans-serif;
     width: 100%;
 }
+
+.input-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-digit {
+    width: 35px;
+    height: 50px;
+    margin-left: 3px;
+    margin-right: 3px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 40px;
+    text-align: center;
+    border-radius: 10px;
+    background-color: rgb(199, 199, 199);
+    color: rgb(19, 8, 51);
+    border: 2px solid rgb(4, 3, 59);
+}
+
+.input-digit:focus {
+    border-color: rgb(139, 6, 24);
+}
+
+textarea:focus, input:focus{
+    outline: none;
+}
