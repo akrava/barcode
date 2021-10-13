@@ -6,8 +6,8 @@ function createWindow() {
     const mainWindow = new BrowserWindow({
         height: 800,
         width: 1200,
-        minHeight: 600,
-        minWidth: 800,
+        minHeight: 800,
+        minWidth: 1200,
         autoHideMenuBar: true, // set to true
         webPreferences: {
             nodeIntegration: true,
