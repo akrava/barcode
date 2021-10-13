@@ -109,6 +109,10 @@ class EAN13 {
             }
         }
 
+        for (let i = 0; i < EAN13.H1.length; i++) {
+            res.push(EAN13.H1[i]);
+        }
+
         return res;
     }
 
