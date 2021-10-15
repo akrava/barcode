@@ -12,7 +12,8 @@
     "build:electron": "set NODE_ENV=production && webpack --config webpack.electron.config.js --mode production",
     "build:react": "set NODE_ENV=production && webpack --config webpack.react.config.js --mode production",
     "build": "npm run build:electron && npm run build:react",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist && rimraf build",
+    "pack-all": "npm run clean && npm run build && npm run pack"
   },
   "repository": {
     "type": "git",
