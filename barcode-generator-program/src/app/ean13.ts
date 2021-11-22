@@ -57,6 +57,19 @@ class EAN13 {
         [EAN13.A, EAN13.B, EAN13.B, EAN13.A, EAN13.B, EAN13.A],
     ];
 
+    private static first_half_is_A = [
+        [true, true,  true,  true,  true,  true ],
+        [true, true,  false, true,  false, false],
+        [true, true,  false, false, true,  false],
+        [true, true,  false, false, false, true ],
+        [true, false, true,  true,  false, false],
+        [true, false, false, true,  true,  false],
+        [true, false, false, false, true,  true ],
+        [true, false, true,  false, true,  false],
+        [true, false, true,  false, false, true ],
+        [true, false, false, true,  false, true ],
+    ];
+
     private source_number: string;
     private source_number_arr: number[];
     private check_digit: number;
@@ -154,7 +167,105 @@ class EAN13 {
         return this.check_digit;
     }
 
+    public static decode(digits: string) {
+        if (digits.length != 95) { 
+            return null;
+        }
 
+        let i = 0;
+
+        for (; i < EAN13.H1.length; i++) {
+            if ((+digits[i]) !== EAN13.H1[i]) {
+                return null;
+            }
+        }
+
+        const cur_first_half_check_is_A = [];
+        const cur_first_half_postion = [];
+
+        for (let j = 0; j < EAN13.first_half[0].length; j++) {
+            const digits_block = digits.substr(i, EAN13.first_half[0][0][0].length);
+            i += EAN13.first_half[0][0][0].length;
+            let found_in_A = false;
+            for (let k = 0; k < EAN13.A.length && !found_in_A; k++) {
+                const check_block = EAN13.A[k].join("");
+                if (digits_block === check_block) {
+                    cur_first_half_check_is_A.push(true);
+                    cur_first_half_postion.push(k);
+                    found_in_A = true;
+                    break;
+                }
+            }
+            let found_in_B = false;
+            for (let k = 0; k < EAN13.B.length && !found_in_A && !found_in_B; k++) {
+                const check_block = EAN13.B[k].join("");
+                if (digits_block === check_block) {
+                    cur_first_half_check_is_A.push(false);
+                    cur_first_half_postion.push(k);
+                    found_in_B = true;
+                    break;
+                }
+            }
+            if (!found_in_A && !found_in_B) {
+                return null;
+            }
+        }
+
+        let check_digit = -1;
+        for (let j = 0; j < this.first_half_is_A.length; j++) {
+            const check_arr = this.first_half_is_A[j];
+            if (check_arr.join() == cur_first_half_check_is_A.join()) {
+                check_digit = j;
+                break;
+            }
+        }
+
+        if (check_digit < 0) {
+            return null;
+        }
+
+        const reversed_barcode = [ ...cur_first_half_postion ];
+
+        for (let j = 0; j < EAN13.H4.length; j++) {
+            const check_ = +digits[i++];
+            if (EAN13.H4[j] !== check_) {
+                return null;
+            }
+        }
+
+        for (let j = 0; j < EAN13.first_half[0].length; j++) {
+            const last_digits_block = digits.substr(i, EAN13.C[0].length);
+            i += EAN13.C[0].length;
+            let found_in_C = false;
+            for (let k = 0; k < EAN13.C.length && !found_in_C; k++) {
+                const check_block = EAN13.C[k].join("");
+                if (last_digits_block === check_block) {
+                    reversed_barcode.push(k);
+                    found_in_C = true
+                    break;
+                }
+            }
+            if (found_in_C != true) {
+                return null;
+            }
+        }
+
+        if (reversed_barcode.length != 12) {
+            return null;
+        }
+
+        const barcode_normal = [ ...reversed_barcode ];
+
+        const barcode_normal_str = barcode_normal.join("");
+
+        const barcode_obj = new EAN13(barcode_normal_str);
+
+        if (barcode_obj.getCheckDigit() !== check_digit) {
+            return null;
+        }
+
+        return barcode_normal_str;
+    }
 }
 
 export default EAN13;
