@@ -250,6 +250,12 @@ class EAN13 {
             }
         }
 
+        for (; i < EAN13.H1.length; i++) {
+            if ((+digits[i]) !== EAN13.H1[i]) {
+                return null;
+            }
+        }
+
         if (reversed_barcode.length != 12) {
             return null;
         }

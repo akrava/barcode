@@ -88,3 +88,30 @@ textarea:focus, input:focus{
     margin-top: 4px;
     font-size: 15px;
 }
+
+.callout {
+    padding: 1.25rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #e9ecef;
+    border-left-color: rgb(233, 236, 239);
+    border-left-width: 1px;
+    border-left-width: .25rem;
+    border-radius: .25rem;
+}
+
+.callout-warning {
+    border-left-color: #f0ad4e;
+}
+
+.callout-warning h5 {
+   color: #f0ad4e;
+}
+
+.callout-error {
+    border-left-color: #d9534f;
+}
+
+.callout-error h5 {
+   color: #d9534f;
+}

@@ -3,6 +3,7 @@ import * as path from "path";
 import * as dotenv from 'dotenv';
 import mongoose from "mongoose";
 import { Schema, Document } from "mongoose";
+import { PNG } from 'pngjs';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
+            contextIsolation: false,
         },
     });
 
@@ -84,4 +86,28 @@ mongoose.model<ICountry>("Country", CountrySchema);
 
 ipcMain.on('create-user', function (event) {
     /* MONGODB CODE */
+});
+
+
+//
+ipcMain.on('png_parse', (event, arg) => {
+    const data = arg as ArrayBuffer;
+    new PNG({ filterType: 4 }).parse(Buffer.from(data)).on("parsed", function () {
+        const arr_data_raw: number[] = [];
+        for (let y = 50; y == 50; y++) {
+            for (let x = 0; x < this.width; x++) {
+                const idx = (this.width * y + x) << 2;
+                const red = this.data[idx];
+                arr_data_raw.push(red === 255 ? 0 : 1);
+            }
+        }
+        arr_data_raw.splice(0, 14);
+        const shrinked_arr_data_raw: number[] = [];
+        for (let i = 0; i < arr_data_raw.length; i += 2) {
+            shrinked_arr_data_raw.push(arr_data_raw[i]);
+        }
+        shrinked_arr_data_raw.splice(95);
+
+        event.reply('png_parse_reply', shrinked_arr_data_raw.join(""));
+    });
 });
