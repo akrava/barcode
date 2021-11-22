@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
     resolve: {
-        extensions: [".tsx", ".ts"],
+        extensions: [".js", ".tsx", ".ts"],
     },
     devtool: "source-map",
     entry: "./src/main.ts",
@@ -10,7 +10,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(ts|tsx)$/,
+                test: /\.(js|ts|tsx)$/,
                 exclude: /node_modules/,
                 use: {
                     loader: "babel-loader",

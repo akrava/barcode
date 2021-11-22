@@ -1,13 +1,18 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
+import * as dotenv from 'dotenv';
+import mongoose from "mongoose";
+import { Schema, Document } from "mongoose";
+
+dotenv.config();
 
 function createWindow() {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        height: 800,
-        width: 1200,
-        minHeight: 800,
-        minWidth: 1200,
+        height: 1000,
+        width: 1400,
+        minHeight: 1000,
+        minWidth: 1400,
         autoHideMenuBar: true, // set to true
         webPreferences: {
             nodeIntegration: true,
@@ -36,7 +41,11 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-    createWindow();
+
+    mongoose.connect(process.env.DB_URL)
+        .catch(err => err ? console.error(err) : console.log("Opened connection with db"))
+        .then(() => createWindow())
+        .catch(err => console.error(err));
 
     app.on("activate", function () {
         // On macOS it's common to re-create a window in the app when the
@@ -58,3 +67,21 @@ app.on("window-all-closed", () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+//
+interface ICountry extends Document {
+    number: number[];
+    name:   string;
+}
+
+const CountrySchema: Schema = new Schema({
+    number: { type: [Number], required: true },
+    name:   { type: String,  required: true },
+});
+
+mongoose.model<ICountry>("Country", CountrySchema);
+// 
+
+ipcMain.on('create-user', function (event) {
+    /* MONGODB CODE */
+});
