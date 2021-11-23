@@ -61,7 +61,7 @@ class Encode extends React.Component {
     make_focus_on_first_digit_if_needed() {
         const first_digit = document.getElementById("first-input-digit");
         if (document.activeElement !== first_digit) {
-            first_digit.focus();
+            first_digit?.focus();
         }
     }
 
@@ -184,7 +184,7 @@ class Encode extends React.Component {
 
     render() {
         return (
-            <div style={{ height: "calc(100% - 20px)", marginTop: "20px" }}>
+            <div style={{ marginTop: "20px" }}> {/*height: "calc(100% - 20px)", */}
                 <p style={{ marginTop: "0", textAlign: "center", fontSize: "20px"}}>
                    You can generate <b>{BARCODE_NAME}</b> barcode from:
                 </p>

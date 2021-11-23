@@ -37,21 +37,32 @@ class Decode extends React.Component {
         window.require('electron').ipcRenderer.send('png_parse', payload);
     }
 
+    show_loaded_image = () => {
+        if (this.state.png_data !== null) {
+            return (
+                <>
+                    <p style={{ marginTop: "20px", fontSize: "18px", marginBottom: "3px"}}>Image loaded from file:</p>
+                    <img src={this.state.png_data}/>
+                </>
+            );
+        }
+        return (<></>);
+    }
+
     get_image_input = () => {
         return (
             <>
-                <button type="button" onClick={() => document.getElementById('file_image').click()} style={{marginRight: "auto"}} className="btn btn-outline-success mx-auto"><i className="bi bi-upload"></i> Load barcode image from file (.png)</button>
-                <input id='file_image' accept=".png" onChange={() => this.upload_image_file()} type='file' hidden/>
-                <p>hmm image</p>
-                {this.state.png_data !== null &&
-                    <img src={this.state.png_data}/>
-                }
-                {this.state.text_barcode_digits !== null &&
-                    <>
-                        <p>{this.state.text_barcode_digits}</p>
-                        <p>{this.decodeBarcode()}</p>
-                    </>
-                }
+                <p style={{ marginTop: "20px", textAlign: "center", fontSize: "20px"}}>
+                    Upload the image of barcode (.png) by clicking the button below:
+                </p>
+                <div style={{display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
+                    <div style={{display: "flex"}}>
+                        <button className="btn btn-secondary" style={{display: this.state.png_data === null ? "none" : "block", marginRight: "10px"}} onClick={this.reset_text_input}>Reset uploaded image</button>
+                        <button type="button" onClick={() => document.getElementById('file_image').click()} style={{marginRight: "auto"}} className="btn btn-primary mx-auto"><i className="bi bi-upload"></i> Load barcode image from file (.png)</button>
+                    </div>
+                    <input id='file_image' accept=".png" onChange={() => this.upload_image_file()} type='file' hidden/>
+                    {this.show_loaded_image()}
+                </div>
             </>
         );
     }
@@ -70,7 +81,10 @@ class Decode extends React.Component {
 
     reset_text_input = () => {
         this.setState({text_barcode_digits: "", png_data: null, text_barcode_digits_from_png: null});
-        document.getElementById("textInput").focus();
+        document.getElementById("textInput")?.focus();
+        if (!document.getElementById("textInput")) {
+            return;
+        }
         (document.getElementById('file_text') as HTMLInputElement).value = "";
     }
 
@@ -101,10 +115,19 @@ class Decode extends React.Component {
                     <p style={{ textAlign: "center", marginTop: "10px", marginBottom: "3px", fontSize: "20px", fontWeight: 500 }}>
                         Results:
                     </p>
-                    <p style={{ textAlign: "center", marginTop: "1rem", marginBottom: "0"}}><b>Barcode is:</b></p>
-                    <pre className="source-barcode" style={{fontSize: "50px"}}>
+
+                    {this.state.text_barcode_digits !== null && this.state.is_image_input === true &&
+                        <>
+                            <p style={{textAlign: "center", marginBottom: "1px", fontSize: "17px", fontStyle: "italic"}}> Parsed binary digits from image:</p>
+                            <p style={{fontFamily: "monospace", color: "black", textAlign: "center"}}>{this.state.text_barcode_digits}</p>
+                        </>
+                    }
+
+                    <p style={{ textAlign: "center", marginTop: "0.8rem", marginBottom: "0"}}><b>Source barcode you can see below</b></p>
+                    <pre className="source-barcode" style={{fontSize: "50px", marginTop: "8px", lineHeight: "40px", overflow: "hidden"}}>
                         <span><b>{res}</b></span>
                     </pre>
+
                 </div>
             );
         } else if (this.state.text_barcode_digits.length === 0) {
@@ -112,7 +135,7 @@ class Decode extends React.Component {
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", alignContent: "center" }}>
                     <p style={{ textAlign: "center", fontSize: "20px" }}>No results...</p>
                     <p style={{ textAlign: "center", marginTop: "0px", fontStyle: "italic", color: "GrayText" }}>
-                        Please, enter digits in the input for the purpose of getting here results – source of barcode
+                        Please, {this.state.is_image_input ? " upload image of barcode " : " enter digits in the input "} for the purpose of getting here results – source of barcode
                     </p>
                 </div>
             );
@@ -135,13 +158,13 @@ class Decode extends React.Component {
 
     componentDidMount() {
         if (!this.state.is_image_input) {
-            document.getElementById("textInput").focus();
+            document.getElementById("textInput")?.focus();
         }
     }
 
     render() {
         return (
-            <div style={{ height: "calc(100% - 20px)", marginTop: "20px" }}>
+            <div style={{ marginTop: "20px" }}> {/*height: "calc(100% - 20px)", */}
                 <p style={{ marginTop: "0", textAlign: "center", fontSize: "20px"}}>
                    You can decode <b>EAN-13</b> barcode from:
                 </p>

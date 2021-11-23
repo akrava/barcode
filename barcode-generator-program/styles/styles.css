@@ -12,10 +12,9 @@ html, body {
 
 .header-block {
     display: flex;
-    flex: 0 1 100px;
+    flex: 0 1 70px;
     color: rgb(255, 255, 255);
     background-color: rgb(17, 29, 56);
-    height: 100px;
     align-items: center;
     justify-content: center;
 }
