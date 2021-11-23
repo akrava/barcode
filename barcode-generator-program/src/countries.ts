@@ -1,9 +1,25 @@
-const static_data_countris = [
+import { Schema, Document } from "mongoose";
+import mongoose from "mongoose";
 
-    [["000", "019"],  	"United States"],
-    [["030", "039"],  	"United States"],
-    [["060", "099"],  	"United States"],
-    [["100", "139"],  	"United States"],
+
+export interface ICountry extends Document {
+    code_start: number;
+    code_end?: number;
+    name:   string;
+}
+
+const CountrySchema: Schema = new Schema({
+    code_start: { type: Number, required: true, unique: true },
+    code_end:   { type: Number, required: false },
+    name:       { type: String,  required: true },
+});
+
+const CountryModel = mongoose.model<ICountry>("Country", CountrySchema);
+
+export default CountryModel;
+
+const static_data_countris = [
+    [["0", "139"],  	"United States and Canada"],
     [["300", "379"],  	"France and Monaco"],
     [["380"],  	 "Bulgaria"],
     [["383"],  	 "Slovenia"],
@@ -85,7 +101,7 @@ const static_data_countris = [
     [["745"],  	 "Panama"],
     [["746"],  	 "Dominican Republic"],
     [["750"],  	 "Mexico"],
-    [["754", "755", "000", "019", "060", "099"],  	 "Canada"],
+    [["754", "755"],  	 "Canada"],
     [["759"],  	 "Venezuela"],
     [["760", "769"],  	  "Switzerland and Liechtenstein"],
     [["770", "771"],  	 "Colombia"],
@@ -106,7 +122,7 @@ const static_data_countris = [
     [["865"],  	 "Mongolia"],
     [["867"],  	 "North Korea"],
     [["868", "869"],  	 "Turkey"],
-    [["870", "871", "872", "873", "874", "875", "876", "877", "878", "879"],  	 "Netherlands"],
+    [["870", "879"],  	 "Netherlands"],
     [["880"],  	 "South Korea"],
     [["883"],  	 "Myanmar"],
     [["884"],  	 "Cambodia"],
@@ -125,7 +141,19 @@ const static_data_countris = [
     [["977"],  	"Serial publications (ISSN)"],
     [["978", "979"],  	"Bookland (ISBN)"],
     [["980"],  	"Refund receipts"],
-
 ];
 
-export default static_data_countris;
+// for (let i = 0; i < countries_data.length; i++) {
+//     const codes = countries_data[i][0];
+//     const name = countries_data[i][1];
+//     const start_code = +codes[0];
+//     let end_code: number | null = null;
+//     if (codes.length === 2) {
+//         end_code = +codes[1];
+//     }
+//     // CountryModel.create({ code_start: start_code, name: name, code_end: end_code }).then((data: ICountry) => {
+//     //     console.log(data);
+//     // }).catch((e: Error) => {
+//     //     console.log(e);
+//     // });
+// }

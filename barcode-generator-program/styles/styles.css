@@ -114,3 +114,14 @@ textarea:focus, input:focus{
 .callout-error h5 {
    color: #d9534f;
 }
+
+.sticky-border::after {
+    position: absolute;
+    top: 41px;
+    background-color: #000;
+    height: 2px;
+    width: 583px;
+    content: "1";
+    font-size: 0px;
+    display: block;
+}

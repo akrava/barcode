@@ -2,8 +2,10 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import * as dotenv from 'dotenv';
 import mongoose from "mongoose";
-import { Schema, Document } from "mongoose";
 import { PNG } from 'pngjs';
+import CountryModel, { ICountry } from "./countries";
+import ManufactureModel, { IManufacture } from "./manufacturers";
+
 
 dotenv.config();
 
@@ -71,23 +73,40 @@ app.on("window-all-closed", () => {
 // code. You can also put them in separate files and require them here.
 
 //
-interface ICountry extends Document {
-    number: number[];
-    name:   string;
-}
 
-const CountrySchema: Schema = new Schema({
-    number: { type: [Number], required: true },
-    name:   { type: String,  required: true },
+
+ipcMain.on('get_all_countries', function (event) {
+    CountryModel.find({}).then((data) => {
+        event.reply('get_all_countries_reply', data.map(x => {
+            return {
+                name: x.name,
+                code_start: x.code_start,
+                code_end: x.code_end,
+                id: x.id
+            }
+        }));
+    }).catch((e) => {
+        console.log(e);
+    });
 });
 
-mongoose.model<ICountry>("Country", CountrySchema);
-// 
 
-ipcMain.on('create-user', function (event) {
-    /* MONGODB CODE */
+ipcMain.on('get_all_manufacturers', function (event) {
+    ManufactureModel.find({}).populate('country_id').then((data) => {
+        console.log(data);
+        event.reply('get_all_manufacturers_reply', data.map(x => {
+            return {
+                name: x.name,
+                code: x.code,
+                country_id: x.country_id,
+                country_code: x.country_code,
+                id: x.id,
+            }
+        }));
+    }).catch((e) => {
+        console.log(e);
+    });
 });
-
 
 //
 ipcMain.on('png_parse', (event, arg) => {
