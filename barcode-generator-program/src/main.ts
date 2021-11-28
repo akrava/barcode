@@ -204,10 +204,18 @@ ipcMain.on('get_product_by_code', function (_, arg: string) {
 });
 
 
-ipcMain.on('get_product_code', function (_, arg: string) {
-    // ProductModel.findByIdAndRemove(arg).then(data => {
-
-    // });
+ipcMain.on('get_product_code', function (event, arg: string) {
+    let p_code: string;
+    let m_code: string;
+    let c_code: string;
+    ProductModel.findById(arg).then(data => {
+        p_code = data.code.toString().padStart(5, "0");
+        ManufactureModel.findById(data.manufacture_id).then(man => {
+            m_code = man.code.toString().padStart(4, "0")
+            c_code = man.country_code.toString().padStart(3, "0");
+            event.reply('get_product_code_reply', c_code + m_code + p_code);
+        });
+    });
 });
 
 //

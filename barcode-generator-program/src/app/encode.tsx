@@ -2,11 +2,25 @@ import React from "react";
 import DigitsPanel from "./digits";
 import EAN13 from "./ean13";
 import { saveAs } from 'file-saver';
+import { IProduct } from "./../products";
+import { IManufacture } from "./../manufacturers";
+import { ICountry } from "./../countries";
 
 const BARCODE_DIGITS_COUNT = 12;
 const BARCODE_NAME = "EAN-13";
 
-type EncodeState = { barcode_source_number_val: string, barcode_source_number_is_valid: boolean, barcode_obj: EAN13 | null, current_page: "encode" | "decode" | "products", is_product_input: boolean };
+type EncodeState = {
+    barcode_source_number_val: string,
+    barcode_source_number_is_valid: boolean,
+    barcode_obj: EAN13 | null,
+    current_page: "encode" | "decode" | "products",
+    is_product_input: boolean,
+    product_current_idx: number,
+    product_name_input: string,
+    products: IProduct[],
+    manufactures: IManufacture[],
+    countries: ICountry[]
+};
 
 class Encode extends React.Component {
     state: EncodeState = {
@@ -14,7 +28,34 @@ class Encode extends React.Component {
         barcode_source_number_is_valid: false,
         barcode_obj: null,
         current_page: "encode",
-        is_product_input: false
+        is_product_input: false,
+
+        product_name_input: "",
+        product_current_idx: -1,
+        products: [],
+        manufactures: [],
+        countries: []
+    }
+
+    componentDidMount() {
+        window.require('electron').ipcRenderer.on('get_all_products_reply', (_, arg: EncodeState["products"]) => {
+            this.setState({
+                products: arg
+            });
+        });
+        window.require('electron').ipcRenderer.send('get_all_products');
+        window.require('electron').ipcRenderer.on('get_all_manufacturers_reply', (_, arg: EncodeState["manufactures"]) => {
+            this.setState({
+                manufactures: arg
+            });
+        });
+        window.require('electron').ipcRenderer.send('get_all_manufacturers');
+        window.require('electron').ipcRenderer.on('get_all_countries_reply', (_, arg: ICountry[]) => {
+            this.setState({
+                countries: arg
+            });
+        });
+        window.require('electron').ipcRenderer.send('get_all_countries');
     }
 
     change_page = (is_product_input: boolean) => {
@@ -23,6 +64,10 @@ class Encode extends React.Component {
         }
         this.setState({is_product_input});
         this.reset_barcode_source_number_val();
+        this.setState({
+            product_name_input: "",
+            product_current_idx: -1
+        })
     }
 
     remove_focus_from_last_digit_if_needed() {
@@ -172,12 +217,77 @@ class Encode extends React.Component {
         );
     }
 
+    handle_set_product = (val: string) => {
+        const idx = this.state.products.findIndex(x => x.name === val);
+
+        this.setState({
+            product_name_input: val,
+            product_current_idx: idx
+        });
+
+        if (idx > 0) {
+            window.require('electron').ipcRenderer.on('get_product_code_reply', (_, arg: string) => {
+                console.log(arg);
+                this.setState({
+                    barcode_source_number_val: arg,
+                    barcode_source_number_is_valid: true,
+                    barcode_obj: new EAN13(arg)
+                });
+            });
+            window.require('electron').ipcRenderer.send('get_product_code', this.state.products[idx].id);
+        } else {
+            this.setState({
+                barcode_source_number_val: "",
+                barcode_source_number_is_valid: false,
+                barcode_obj: null
+            });
+        }
+    }
+
     get_product_input = () => {
         return (
             <>
-                <p style={{ marginTop: "0", textAlign: "center", fontSize: "20px"}}>
-                    hmm
+                <p style={{ marginTop: "20px", textAlign: "center", fontSize: "20px"}}>
+                    Choose product from list:
                 </p>
+                <div className="justify-content-center mx-5" style={{marginBottom: "25px"}}>
+                    <input style={{width: "500px"}} value={this.state.product_name_input} onChange={(e) => this.handle_set_product(e.currentTarget.value)} className="form-control mx-auto" list="datalistOptions1" id="exampleDataList" placeholder="Type to search..."/>
+                    <datalist id="datalistOptions1">
+                        {this.state.products && this.state.products.sort((x, y) => x.code - y.code).map(x =>(
+                            <option key={x.id} value={x.name} itemID={x.id} />
+                        ))}
+                    </datalist>
+                    {this.state.product_current_idx > 0 &&
+                        <>
+                            <p style={{ marginTop: "10px", textAlign: "center", fontSize: "20px"}}>Info about product:</p>
+                            <div className="row g-4">
+                                <div className="col-6">
+                                    <p><b>Product name</b>: {this.state.products[this.state.product_current_idx].name}</p>
+                                </div>
+                                <div className="col-3">
+                                    <p><b>Product type</b>: {this.state.products[this.state.product_current_idx].type}</p>
+                                </div>
+                                <div className="col-3">
+                                    <p><b>Country</b>: {this.state.countries.find(y => y.id === this.state.manufactures.find(x => x. id === this.state.products[this.state.product_current_idx].manufacture_id).country_id).name}</p>
+                                </div>
+                            </div>
+                            <div className="row g-4">
+                                <div className="col-6">
+                                    <p style={{marginBottom: "0"}}><b>Manufacture name</b>: {this.state.manufactures && this.state.manufactures.find(y => y.id === this.state.products[this.state.product_current_idx].manufacture_id)?.name}</p>
+                                </div>                      
+                                <div className="col-2">
+                                    <p style={{marginBottom: "0"}}><b>Product code</b>: {this.state.products[this.state.product_current_idx].code.toString().padStart(5, "0")}</p>
+                                </div>
+                                <div className="col-2">
+                                    <p style={{marginBottom: "0"}}><b>Product price</b>: {this.state.products[this.state.product_current_idx].price}</p>
+                                </div>
+                                <div className="col-2">
+                                    <p style={{marginBottom: "0"}}><b>Product color</b>: <span style={{ color: this.state.products[this.state.product_current_idx].color, backgroundColor: this.state.products[this.state.product_current_idx].color}}>______</span></p>
+                                </div>
+                            </div>
+                        </>
+                    }
+                </div>
             </>
         );
     }
