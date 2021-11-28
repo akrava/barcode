@@ -47,7 +47,10 @@ class Decode extends React.Component {
 
     parse_image_file = (payload: string | ArrayBuffer) => {
         window.require('electron').ipcRenderer.on('png_parse_reply', (_, arg) => {
-            this.setState({text_barcode_digits: arg})
+            this.setState({
+                text_barcode_digits: arg,
+                product_idx: -1
+            });
             this.getIdxOfProduct(arg);
         });
         window.require('electron').ipcRenderer.send('png_parse', payload);
@@ -106,14 +109,22 @@ class Decode extends React.Component {
         const blob = (document.getElementById('file_text') as HTMLInputElement).files[0];
         reader.readAsText(blob);
         reader.onload = () => {
-            this.setState({text_barcode_digits: reader.result.toString()});
+            this.setState({
+                text_barcode_digits: reader.result.toString(),
+                product_idx: -1
+            });
             this.getIdxOfProduct(reader.result.toString());
         };
         
     }
 
     reset_text_input = () => {
-        this.setState({text_barcode_digits: "", png_data: null, text_barcode_digits_from_png: null});
+        this.setState({
+            text_barcode_digits: "",
+            png_data: null,
+            text_barcode_digits_from_png: null,
+            product_idx: -1
+        });
         this.getIdxOfProduct("");
         document.getElementById("textInput")?.focus();
         if (!document.getElementById("textInput")) {
@@ -123,7 +134,10 @@ class Decode extends React.Component {
     }
 
     tmp = (value: string) => {
-        this.setState({text_barcode_digits: value});
+        this.setState({
+            text_barcode_digits: value,
+            product_idx: -1
+        });
         this.getIdxOfProduct(value);
     }
 

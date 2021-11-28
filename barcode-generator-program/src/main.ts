@@ -206,6 +206,9 @@ ipcMain.on('get_product_by_code', function (event, arg: string) {
             country_code: +c_code,
             code: +m_code
         }).then(data => {
+            if (data === null) {
+                return;
+            }
             console.log(data);
             ProductModel.findOne({
                 manufacture_id: data.id,
@@ -223,6 +226,9 @@ ipcMain.on('get_product_code', function (event, arg: string) {
     let m_code: string;
     let c_code: string;
     ProductModel.findById(arg).then(data => {
+        if (data === null) {
+            return;
+        }
         p_code = data.code.toString().padStart(5, "0");
         ManufactureModel.findById(data.manufacture_id).then(man => {
             m_code = man.code.toString().padStart(4, "0")
