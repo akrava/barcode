@@ -120,8 +120,12 @@ textarea:focus, input:focus{
     top: 41px;
     background-color: #000;
     height: 2px;
-    width: 583px;
+    width: 600px;
     content: "1";
     font-size: 0px;
     display: block;
+}
+
+.sticky-border.manuf::after {
+    width: 1400px;
 }

@@ -92,13 +92,12 @@ ipcMain.on('get_all_countries', function (event) {
 
 
 ipcMain.on('get_all_manufacturers', function (event) {
-    ManufactureModel.find({}).populate('country_id').then((data) => {
-        console.log(data);
+    ManufactureModel.find({}).then((data) => {
         event.reply('get_all_manufacturers_reply', data.map(x => {
             return {
                 name: x.name,
                 code: x.code,
-                country_id: x.country_id,
+                country_id: x.country_id.toString(),
                 country_code: x.country_code,
                 id: x.id,
             }
@@ -107,6 +106,40 @@ ipcMain.on('get_all_manufacturers', function (event) {
         console.log(e);
     });
 });
+
+ipcMain.on('add_manufacture', function (_, arg: IManufacture) {
+    new ManufactureModel({
+        country_id: arg.country_id,
+        country_code: arg.country_code,
+        code: arg.code,
+        name: arg.name,
+        description: arg.description
+    }).save().then((data => {
+        // console.log(data);
+    }));
+});
+
+ipcMain.on('update_manufacture', function (_, arg: IManufacture) {
+    ManufactureModel.findByIdAndUpdate(arg.id, {
+        $set: {
+            country_id: arg.country_id,
+            country_code: arg.country_code,
+            code: arg.code,
+            name: arg.name
+        }
+    }).then(data => {
+        
+    }).catch(e => {
+        console.log(e);
+    });
+});
+
+ipcMain.on('delete_manufacture', function (_, arg: string) {
+    ManufactureModel.findByIdAndRemove(arg).then(data => {
+
+    });
+});
+
 
 //
 ipcMain.on('png_parse', (event, arg) => {
