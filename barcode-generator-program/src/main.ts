@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { PNG } from 'pngjs';
 import CountryModel, { ICountry } from "./countries";
 import ManufactureModel, { IManufacture } from "./manufacturers";
+import ProductModel, { IProduct } from "./products";
 
 
 dotenv.config();
@@ -128,7 +129,7 @@ ipcMain.on('update_manufacture', function (_, arg: IManufacture) {
             name: arg.name
         }
     }).then(data => {
-        
+
     }).catch(e => {
         console.log(e);
     });
@@ -140,6 +141,74 @@ ipcMain.on('delete_manufacture', function (_, arg: string) {
     });
 });
 
+
+
+ipcMain.on('get_all_products', function (event) {
+    ProductModel.find({}).then((data) => {
+        event.reply('get_all_products_reply', data.map(x => {
+            return {
+                manufacture_id: x.manufacture_id.toString(),
+                code: x.code,
+                name: x.name,
+                type: x.type,
+                color: x.color,
+                price: x.price,
+                id: x.id,
+            }
+        }));
+    }).catch((e) => {
+        console.log(e);
+    });
+});
+
+ipcMain.on('add_product', function (_, arg: IProduct) {
+    new ProductModel({
+        manufacture_id: arg.manufacture_id,
+        code: arg.code,
+        name: arg.name,
+        type: arg.type,
+        color: arg.color,
+        price: arg.price,
+    }).save().then((data => {
+        // console.log(data);
+    }));
+});
+
+ipcMain.on('update_product', function (_, arg: IProduct) {
+    ProductModel.findByIdAndUpdate(arg.id, {
+        $set: {
+            manufacture_id: arg.manufacture_id,
+            code: arg.code,
+            name: arg.name,
+            type: arg.type,
+            color: arg.color,
+            price: arg.price,
+        }
+    }).then(data => {
+
+    }).catch(e => {
+        console.log(e);
+    });
+});
+
+ipcMain.on('delete_product', function (_, arg: string) {
+    ProductModel.findByIdAndRemove(arg).then(data => {
+
+    });
+});
+
+ipcMain.on('get_product_by_code', function (_, arg: string) {
+    // ProductModel.findByIdAndRemove(arg).then(data => {
+
+    // });
+});
+
+
+ipcMain.on('get_product_code', function (_, arg: string) {
+    // ProductModel.findByIdAndRemove(arg).then(data => {
+
+    // });
+});
 
 //
 ipcMain.on('png_parse', (event, arg) => {
