@@ -197,10 +197,24 @@ ipcMain.on('delete_product', function (_, arg: string) {
     });
 });
 
-ipcMain.on('get_product_by_code', function (_, arg: string) {
-    // ProductModel.findByIdAndRemove(arg).then(data => {
-
-    // });
+ipcMain.on('get_product_by_code', function (event, arg: string) {
+    if (arg && arg.length == 12) {
+        const c_code = arg.substr(0, 3);
+        const m_code = arg.substr(3, 4);
+        const p_code = arg.substr(7);
+        ManufactureModel.findOne({
+            country_code: +c_code,
+            code: +m_code
+        }).then(data => {
+            console.log(data);
+            ProductModel.findOne({
+                manufacture_id: data.id,
+                code: +p_code
+            }).then(res => {
+                event.reply('get_product_by_code_reply', res.id);
+            });
+        })
+    }
 });
 
 

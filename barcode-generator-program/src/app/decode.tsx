@@ -1,15 +1,30 @@
 import React from "react";
 import EAN13 from "./ean13";
 // const { ipcRenderer } = require('electron');
+import { IProduct } from "./../products";
+import { IManufacture } from "./../manufacturers";
+import { ICountry } from "./../countries";
 
-type DecodeState = { is_image_input: boolean, text_barcode_digits: string, png_data: string | null };
+type DecodeState = {
+    is_image_input: boolean,
+    text_barcode_digits: string,
+    png_data: string | null,
+    products: IProduct[],
+    manufactures: IManufacture[],
+    countries: ICountry[],
+    product_idx: number
+};
 
 
 class Decode extends React.Component {
     state: DecodeState = {
         is_image_input: false,
         text_barcode_digits: "",
-        png_data: null
+        png_data: null,
+        products: [],
+        manufactures: [],
+        countries: [],
+        product_idx: -1
     }
 
     change_page = (is_image_input: boolean) => {
@@ -33,6 +48,7 @@ class Decode extends React.Component {
     parse_image_file = (payload: string | ArrayBuffer) => {
         window.require('electron').ipcRenderer.on('png_parse_reply', (_, arg) => {
             this.setState({text_barcode_digits: arg})
+            this.getIdxOfProduct(arg);
         });
         window.require('electron').ipcRenderer.send('png_parse', payload);
     }
@@ -72,20 +88,43 @@ class Decode extends React.Component {
         return result;
     }
 
+    getIdxOfProduct = (text_barcode_digits: string) => {
+        const barcode = EAN13.decode(text_barcode_digits);
+        if (text_barcode_digits.length === 95 && barcode !== null && barcode.length === 12) {
+            window.require('electron').ipcRenderer.on('get_product_by_code_reply', (_, arg: string) => {
+                const product_idx = this.state.products.findIndex(x => x.id === arg);
+                this.setState({
+                    product_idx
+                });
+            });
+            window.require('electron').ipcRenderer.send('get_product_by_code', barcode);
+        }
+    }
+
     upload_text_file = () => {
         const reader = new FileReader();
         const blob = (document.getElementById('file_text') as HTMLInputElement).files[0];
         reader.readAsText(blob);
-        reader.onload = () => this.setState({text_barcode_digits: reader.result.toString()});
+        reader.onload = () => {
+            this.setState({text_barcode_digits: reader.result.toString()});
+            this.getIdxOfProduct(reader.result.toString());
+        };
+        
     }
 
     reset_text_input = () => {
         this.setState({text_barcode_digits: "", png_data: null, text_barcode_digits_from_png: null});
+        this.getIdxOfProduct("");
         document.getElementById("textInput")?.focus();
         if (!document.getElementById("textInput")) {
             return;
         }
         (document.getElementById('file_text') as HTMLInputElement).value = "";
+    }
+
+    tmp = (value: string) => {
+        this.setState({text_barcode_digits: value});
+        this.getIdxOfProduct(value);
     }
 
     get_text_input = () => {
@@ -95,7 +134,7 @@ class Decode extends React.Component {
                     Enter barcodes digits <i>(binary representation)</i> in input below:
                 </p>
                 <div style={{display: "flex"}}>
-                    <textarea id="textInput" value={this.state.text_barcode_digits} maxLength={95} minLength={95} onChange={(e) => this.setState({text_barcode_digits: e.currentTarget.value})} style={{ fontFamily: "monospace", width: "920px", height: "30px", resize: "none", display: "block", marginLeft: "auto", marginRight: "5px" }}></textarea>
+                    <textarea id="textInput" value={this.state.text_barcode_digits} maxLength={95} minLength={95} onChange={(e) => this.tmp(e.currentTarget.value)} style={{ fontFamily: "monospace", width: "920px", height: "30px", resize: "none", display: "block", marginLeft: "auto", marginRight: "5px" }}></textarea>
                     <button type="button" onClick={() => document.getElementById('file_text').click()} style={{marginRight: "auto"}} className="btn btn-outline-success btn-sm mr-auto"><i className="bi bi-upload"></i> Load binary digits from file (.txt)</button>
                     <input id='file_text' accept=".txt" onChange={() => this.upload_text_file()} type='file' hidden/>
                 </div>
@@ -127,6 +166,21 @@ class Decode extends React.Component {
                     <pre className="source-barcode" style={{fontSize: "50px", marginTop: "8px", lineHeight: "40px", overflow: "hidden"}}>
                         <span><b>{res}</b></span>
                     </pre>
+
+                    {this.state.product_idx > 0 &&
+                        <>
+                            <p style={{ marginTop: "8px", marginBottom: "4px", textAlign: "center", fontSize: "16px"}}>Info about product:</p>
+                            <div className="mx-auto" style={{width: "400px"}}>
+                                <p style={{marginBottom: "3px", fontSize: "15px"}}><b>Product name</b>: {this.state.products[this.state.product_idx].name}</p>
+                                <p style={{marginBottom: "3px", fontSize: "15px"}}><b>Product type</b>: {this.state.products[this.state.product_idx].type}</p>
+                                <p style={{marginBottom: "3px", fontSize: "15px"}}><b>Country</b>: {this.state.countries.find(y => y.id === this.state.manufactures.find(x => x. id === this.state.products[this.state.product_idx].manufacture_id).country_id).name}</p>
+                                <p style={{marginBottom: "3px", fontSize: "15px"}}><b>Manufacture name</b>: {this.state.manufactures && this.state.manufactures.find(y => y.id === this.state.products[this.state.product_idx].manufacture_id)?.name}</p>
+                                <p style={{marginBottom: "3px", fontSize: "15px"}}><b>Product code</b>: {this.state.products[this.state.product_idx].code.toString().padStart(5, "0")}</p>
+                                <p style={{marginBottom: "3px", fontSize: "15px"}}><b>Product price</b>: {this.state.products[this.state.product_idx].price}</p>
+                                <p style={{marginBottom: "0px", fontSize: "15px"}}><b>Product color</b>: <span style={{ color: this.state.products[this.state.product_idx].color, backgroundColor: this.state.products[this.state.product_idx].color}}>______</span></p>
+                            </div>
+                        </>
+                    }
 
                 </div>
             );
@@ -160,6 +214,24 @@ class Decode extends React.Component {
         if (!this.state.is_image_input) {
             document.getElementById("textInput")?.focus();
         }
+        window.require('electron').ipcRenderer.on('get_all_products_reply', (_, arg: DecodeState["products"]) => {
+            this.setState({
+                products: arg
+            });
+        });
+        window.require('electron').ipcRenderer.send('get_all_products');
+        window.require('electron').ipcRenderer.on('get_all_manufacturers_reply', (_, arg: DecodeState["manufactures"]) => {
+            this.setState({
+                manufactures: arg
+            });
+        });
+        window.require('electron').ipcRenderer.send('get_all_manufacturers');
+        window.require('electron').ipcRenderer.on('get_all_countries_reply', (_, arg: ICountry[]) => {
+            this.setState({
+                countries: arg
+            });
+        });
+        window.require('electron').ipcRenderer.send('get_all_countries');
     }
 
     render() {
