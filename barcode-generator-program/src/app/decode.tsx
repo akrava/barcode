@@ -1,5 +1,5 @@
 import React from "react";
-import EAN13 from "./ean13";
+import ITF14 from "./ITF14";
 // const { ipcRenderer } = require('electron');
 import { IProduct } from "./../products";
 import { IManufacture } from "./../manufacturers";
@@ -87,12 +87,12 @@ class Decode extends React.Component {
     }
 
     decodeBarcode = () => {
-        const result = EAN13.decode(this.state.text_barcode_digits);
+        const result = ITF14.decode(this.state.text_barcode_digits);
         return result;
     }
 
     getIdxOfProduct = (text_barcode_digits: string) => {
-        const barcode = EAN13.decode(text_barcode_digits);
+        const barcode = ITF14.decode(text_barcode_digits);
         if (text_barcode_digits.length === 95 && barcode !== null && barcode.length === 12) {
             window.require('electron').ipcRenderer.on('get_product_by_code_reply', (_, arg: string) => {
                 const product_idx = this.state.products.findIndex(x => x.id === arg);
@@ -161,7 +161,7 @@ class Decode extends React.Component {
 
     results_block = () => {
         const res = this.decodeBarcode();
-        if (this.state.text_barcode_digits.length === 95 && res !== null && res.length === 12) {
+        if (this.state.text_barcode_digits.length > 10 && res !== null && res.length > 1) {
             return (
                 <div>
                     <hr style={{ margin: "0 30px" }}/>
@@ -207,7 +207,7 @@ class Decode extends React.Component {
                     </p>
                 </div>
             );
-        } else if (this.state.text_barcode_digits.length === 95 && res === null) {
+        } else if (this.state.text_barcode_digits.length > 10 && res === null) {
             return (
                 <div className="callout callout-error mx-auto" style={{width: "400px"}}>
                     <h5>Couldn't validate barcodes digits</h5>
@@ -252,7 +252,7 @@ class Decode extends React.Component {
         return (
             <div style={{ marginTop: "20px" }}> {/*height: "calc(100% - 20px)", */}
                 <p style={{ marginTop: "0", textAlign: "center", fontSize: "20px"}}>
-                   You can decode <b>EAN-13</b> barcode from:
+                   You can decode <b>ITF-14</b> barcode from:
                 </p>
                 <ul className="nav nav-tabs justify-content-center">
                     <li className="nav-item">

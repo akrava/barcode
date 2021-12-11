@@ -47,7 +47,7 @@ function createWindow() {
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
 
-    mongoose.connect(process.env.DB_URL)
+    mongoose.connect('mongodb+srv://oleksii:dsPmGirBixJ5GMP@cluster0.fcegm.mongodb.net/products?retryWrites=true&w=majority')
         .catch(err => err ? console.error(err) : console.log("Opened connection with db"))
         .then(() => createWindow())
         .catch(err => console.error(err));
@@ -229,12 +229,7 @@ ipcMain.on('get_product_code', function (event, arg: string) {
         if (data === null) {
             return;
         }
-        p_code = data.code.toString().padStart(5, "0");
-        ManufactureModel.findById(data.manufacture_id).then(man => {
-            m_code = man.code.toString().padStart(4, "0")
-            c_code = man.country_code.toString().padStart(3, "0");
-            event.reply('get_product_code_reply', c_code + m_code + p_code);
-        });
+        return data.code;
     });
 });
 
@@ -243,20 +238,21 @@ ipcMain.on('png_parse', (event, arg) => {
     const data = arg as ArrayBuffer;
     new PNG({ filterType: 4 }).parse(Buffer.from(data)).on("parsed", function () {
         const arr_data_raw: number[] = [];
-        for (let y = 50; y == 50; y++) {
+        for (let y = 5; y == 5; y++) {
             for (let x = 0; x < this.width; x++) {
-                const idx = (this.width * y + x) << 2;
-                const red = this.data[idx];
-                arr_data_raw.push(red === 255 ? 0 : 1);
+                const idx2 = (this.width * y + x) << 2;
+                console.log('idx2 ',this.data[idx2],// r
+                this.data[idx2 + 1] , // g
+                this.data[idx2 + 2] ) // b);
+                
+                arr_data_raw.push(this.data[idx2] > 130 ? 0 : 1);
             }
         }
-        arr_data_raw.splice(0, 14);
-        const shrinked_arr_data_raw: number[] = [];
-        for (let i = 0; i < arr_data_raw.length; i += 2) {
-            shrinked_arr_data_raw.push(arr_data_raw[i]);
-        }
-        shrinked_arr_data_raw.splice(95);
+        console.log('this.arr_data_raw', arr_data_raw);
+        const tr = arr_data_raw.join("").replaceAll('00', '0').replaceAll('11', '1').slice(0, 135);
+        console.log('arr_data_raw.join("")', tr);
+        
 
-        event.reply('png_parse_reply', shrinked_arr_data_raw.join(""));
+        event.reply('png_parse_reply', tr);
     });
 });

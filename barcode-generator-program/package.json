@@ -7,7 +7,7 @@
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run clean && npm run build && electron ./dist/main.js",
     "pack": "electron-builder build",
-    "dev:electron": "set NODE_ENV=development && webpack --config webpack.electron.config.js --mode development && electron .",
+    "dev:electron": "set NODE_ENV=development && webpack --config webpack.electron.config.js --mode development && electron ./dist/main.js",
     "dev:react": "set NODE_ENV=development && webpack-dev-server --config webpack.react.config.js --mode development --target web",
     "build:electron": "set NODE_ENV=production && webpack --config webpack.electron.config.js --mode production",
     "build:react": "set NODE_ENV=production && webpack --config webpack.react.config.js --mode production",
@@ -17,14 +17,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/akrava/barcode.git"
+    "url": ""
   },
-  "author": "Arkadii Kravchuk",
+  "author": "Oleksii Atamaniuk",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/akrava/barcode/issues"
-  },
-  "homepage": "https://github.com/akrava/barcode#readme",
   "devDependencies": {
     "@babel/core": "^7.15.8",
     "@babel/plugin-transform-runtime": "^7.16.4",
@@ -60,9 +56,9 @@
     "webpack-dev-server": "^4.3.1"
   },
   "build": {
-    "appId": "barcode_generator.kravchuk",
-    "productName": "Barcode EAN-13 program",
-    "copyright": "Copyright © 2021 Arkadii Kravchuk",
+    "appId": "barcode_generator.atamaniuk",
+    "productName": "Barcode ITF-14 program",
+    "copyright": "Copyright © 2021 Oleksii Atamaniuk",
     "directories": {
       "output": "build"
     },
@@ -72,6 +68,7 @@
   },
   "dependencies": {
     "file-saver": "^2.0.5",
+    "mongodb": "^4.2.1",
     "mongoose": "^6.0.13",
     "pngjs": "^6.0.0"
   }

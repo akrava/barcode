@@ -52,7 +52,7 @@ class Products extends React.Component {
     }
 
     componentDidMount() {
-        this.change_page("countries", true);
+        this.load_products();
     }
 
     load_mabufactures = () => {
@@ -80,20 +80,7 @@ class Products extends React.Component {
                 manufacturer_id_edit: null
             });
 
-            if (page === "countries" || page === "manufacturers" || page === "products") {
-                window.require('electron').ipcRenderer.on('get_all_countries_reply', (_, arg: ICountry[]) => {
-                    this.setState({
-                        countries: arg
-                    });
-                });
-                window.require('electron').ipcRenderer.send('get_all_countries');
-            }
-            if (page === "manufacturers" || page === "products") {
-                this.load_mabufactures();
-            }
-            if (page === "products") {
-                this.load_products();
-            }
+            this.load_products();
 
         }
     }
@@ -263,86 +250,31 @@ class Products extends React.Component {
     }
 
     render_products_page = () => {
-        const is_add_product_button_active = !!this.state.manufacturers && !!this.state.manufacturers.find(x => x.name === this.state.manufacture_name_input) &&
-            this.state.product_code_input && this.state.product_name_input.length > 2 && this.state.product_type_input.length > 2 &&
-            this.state.product_color_input.length > 2 && this.state.product_price_input.length > 0 &&
-            Number.isInteger(+this.state.product_code_input) && parseFloat(this.state.product_price_input) > 0;
+        console.log('this.state.product', this.state.products);
+        
 
         return (
             <div>
                 <p style={{textAlign: "center", fontSize: "25px", marginTop: "10px", marginBottom: "0"}}>List of products</p>
-                <div style={{width: "1417px", height: "300px", maxWidth: "1417px"}} className="table-responsive mx-auto">
+                <div style={{width: "1417px", maxWidth: "1417px"}} className="table-responsive mx-auto">
                     <table style={{width: "1400px"}} className="table table-striped table-hover">
                         <thead className="sticky-border manuf" style={{position: "sticky", top: "0", backgroundColor: "#fff" }}>
                             <tr>
-                                <th style={{width: "120px"}}>Code</th>
-                                <th>Manufacture name</th>
-                                <th>Product type</th>
+                                <th>Code</th>
                                 <th>Product name</th>
                                 <th>Price</th>
-                                <th>Color</th>
-                                <th style={{width: "85px"}}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {this.state.products && this.state.products.sort((x, y) => x.code - y.code).map(x => (
+                            {this.state.products.map(x => (
                                 <tr key={x.id}>
-                                    <td>{x.code.toString().padStart(5, "0")}</td>
-                                    <td>{this.state.manufacturers && this.state.manufacturers.find(y => y.id === x.manufacture_id)?.name}</td>
-                                    <td>{x.type}</td>
+                                    <td>{x.code.toString()}</td>
                                     <td>{x.name}</td>
                                     <td>{x.price}</td>
-                                    <td><span style={{ color: x.color, backgroundColor: x.color}}>______</span></td>
-                                    <td><i style={{marginRight: "15px", cursor: "pointer"}} id={"e_p" + x.id} onClick={(e) => this.set_product_to_edit(e.currentTarget.id.substr(3))} className="bi bi-pencil"></i><i style={{cursor: "pointer"}} id={"d_p" + x.id} onClick={(e) => this.delete_product(e.currentTarget.id.substr(3))} className="bi bi-trash"></i></td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                </div>
-                <div className="mx-auto" style={{ marginTop: "15px", width: "700px" }}>
-                    <p style={{textAlign: "center", fontSize: "25px",}}>{!this.state.manufacturer_id_edit ? "Add new product:" : "Edit product:"}</p>
-                    <form id="add_product">
-                        <div className="row g-3 mb-3">
-                            <div className="col-7">
-                                <label htmlFor="exampleDataList" className="form-label">Manufacture name</label>
-                                <input value={this.state.manufacture_name_input} onChange={(e) => this.setState({manufacture_name_input: e.currentTarget.value})} className="form-control" list="datalistOptions1" id="exampleDataList" placeholder="Type to search..."/>
-                                <datalist id="datalistOptions1">
-                                    {this.state.manufacturers && this.state.manufacturers.sort((x, y) => x.code - y.code).map(x =>(
-                                        <option key={x.id} value={x.name} itemID={x.id} />
-                                    ))}
-                                </datalist>
-                            </div>
-                            <div className="col-5">
-                                <label htmlFor="exampleInputPassword1" className="form-label">Product type</label>
-                                <input type="text" value={this.state.product_type_input} onChange={(e) => this.setState({product_type_input: e.currentTarget.value})} className="form-control" id="exampleInputPassword1"/>
-                            </div>
-                        </div>
-
-                        <div className="row g-3 mb-3">
-                            <div className="col-md">
-                                <label htmlFor="exampleInputPassword1" className="form-label">Product name</label>
-                                <input type="text" value={this.state.product_name_input} onChange={(e) => this.setState({product_name_input: e.currentTarget.value})} className="form-control" id="exampleInputPassword1"/>
-                            </div>
-                        </div>
-
-                        <div className="row g-3 mb-3">
-                            <div className="col-2">
-                                <label htmlFor="exampleInputPassword1" className="form-label">Color</label>
-                                <input type="color" style={{height: "38px"}} value={this.state.product_color_input} onChange={(e) => this.setState({product_color_input: e.currentTarget.value})} className="form-control" id="exampleInputPassword1"/>
-                            </div>
-                            <div className="col-5">
-                                <label htmlFor="exampleInputPassword1" className="form-label">Price</label>
-                                <input type="number" step="0.01" min={0} value={this.state.product_price_input} onChange={(e) => this.setState({product_price_input: e.currentTarget.value})} className="form-control" id="exampleInputPassword1"/>
-                            </div>
-                            <div className="col-5">
-                                <label htmlFor="exampleInputPassword1" className="form-label">Product code</label>
-                                <input type="number" min={0} step={0} max={99999} value={this.state.product_code_input} onChange={(e) => this.setState({product_code_input: e.currentTarget.value.substr(0, 5)})} className="form-control" id="exampleInputPassword1"/>
-                            </div>
-                        </div>
-
-                        <button disabled={!is_add_product_button_active} onClick={() => this.add_product_click_handler()} type="button" className="btn btn-primary">{!this.state.product_id_edit ? "Add" : "Update"}</button>
-                        <button style={{ marginLeft: "20px", display: !this.state.product_id_edit ? "none" : ""}} onClick={() => this.cancel_product_to_edit()} type="button" className="btn btn-secondary">Cancel</button>
-                    </form>
                 </div>
             </div>
         );
@@ -446,20 +378,8 @@ class Products extends React.Component {
     render() {
         return (
             <div style={{ marginTop: "20px" }}>
-                <ul className="nav nav-tabs justify-content-center">
-                    <li className="nav-item">
-                        <a className={this.state.current_page !== "countries" ? "nav-link" : "nav-link active"} href="#" onClick={() => this.change_page("countries")}>Countries</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className={this.state.current_page !== "manufacturers" ? "nav-link" : "nav-link active"} href="#" onClick={() => this.change_page("manufacturers")}>Manufacturers</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className={this.state.current_page !== "products" ? "nav-link" : "nav-link active"} href="#" onClick={() => this.change_page("products")}>Prodcuts</a>
-                    </li>
-                </ul>
-                {this.state.current_page === "countries" ?
-                    this.render_countries_page() : this.state.current_page === "manufacturers" ?
-                        this.render_manufacturers_page() : this.render_products_page()
+                {
+                    this.render_products_page()
                 }
             </div>
         );
